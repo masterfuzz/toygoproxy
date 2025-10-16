@@ -1,0 +1,28 @@
+services:
+    postgresql:
+        image: postgres:16
+        container_name: postgresql
+        platform: linux/amd64
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_USER: pguser
+            POSTGRES_PASSWORD: pgpass
+            POSTGRES_DB: toygoproxy
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-U', 'toygoproxy']
+            interval: 2s
+            timeout: 2s
+            retries: 3
+            start_period: 7s
+        # networks:
+        #   - application
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: pgadmin4_container
+        restart: always
+        ports:
+            - '7888:80'
+        environment:
+            PGADMIN_DEFAULT_EMAIL: someone@example.com
+            PGADMIN_DEFAULT_PASSWORD: password
