@@ -10,8 +10,9 @@ import (
 	db "github.com/masterfuzz/toygoproxy/pkg/database/postgres"
 )
 
+var _ http.Handler = &ProxyServer{}
+
 type ProxyServer struct {
-	http.Handler
 	conn *pgxpool.Pool
 	q *db.Queries
 }
@@ -23,7 +24,8 @@ func NewProxyServer(conn *pgxpool.Pool) *ProxyServer {
 	}
 }
 
-func (p *ProxyServer) ServeHttp(w http.ResponseWriter, r *http.Request) {
+func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%v %v", r.Method, r.URL)
 	resp, err := p.q.GetStatusPage(context.Background(), r.URL.Hostname())
 	if err != nil {
 		// TODO check if row just not found or if database error
