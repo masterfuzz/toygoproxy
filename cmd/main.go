@@ -12,12 +12,16 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/masterfuzz/toygoproxy/pkg/database/migrations"
+	"github.com/masterfuzz/toygoproxy/pkg/issuer"
 	"github.com/masterfuzz/toygoproxy/pkg/proxy"
 )
 
 var (
 	httpsPort = "8443"
 	httpPort = "8080"
+
+	// In the real world the API server would be a different server entirely
+	magicHostname = "localhost"
 )
 
 func main() {
@@ -33,13 +37,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	prox := proxy.NewProxyServer(pool)
+	certs := proxy.NewCertificateProvider()
+	prox := proxy.NewProxyServer(pool, certs, &issuer.SelfSignedIssuer{}, magicHostname)
 
 	mux := http.NewServeMux()
 	mux.Handle("/", prox)
 
 
-	certs := proxy.NewCertificateProvider()
 
 	tlsConfig := &tls.Config{
 		GetCertificate: certs.GetCertificate,

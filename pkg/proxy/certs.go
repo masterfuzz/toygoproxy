@@ -31,3 +31,7 @@ func (c *CertificateProvider) GetCertificate(hello *tls.ClientHelloInfo) (*tls.C
 	return c.fallback, nil
 	
 }
+
+func (c *CertificateProvider) SetCertificate(name string, cert *tls.Certificate) {
+	c.certificates[name] = cert
+}
