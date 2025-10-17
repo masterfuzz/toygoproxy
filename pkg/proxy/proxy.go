@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/masterfuzz/toygoproxy/pkg/database/postgres"
@@ -32,7 +33,7 @@ func NewProxyServer(conn *pgxpool.Pool, certificateProvider *CertificateProvider
 }
 
 func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	hostname := r.Host
+	hostname := strings.Split(r.Host, ":")[0]
 	if hostname == p.magic {
 		p.handleApi(w, r)
 		return
