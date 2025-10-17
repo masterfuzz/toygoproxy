@@ -14,15 +14,11 @@ import (
 
 type CertificateProvider struct {
 	certificates map[string]*tls.Certificate
-	fallback *tls.Certificate
-	q *db.Queries
+	fallback     *tls.Certificate
+	q            *db.Queries
 }
 
-func NewCertificateProvider(ctx context.Context, conn *pgxpool.Pool) *CertificateProvider {
-	fallback, err := tls.LoadX509KeyPair("cert.crt", "cert.key")
-	if err != nil {
-		log.Fatalf("couldn't load fallback certificate, %v", err)
-	}
+func NewCertificateProvider(ctx context.Context, conn *pgxpool.Pool, fallback *tls.Certificate) *CertificateProvider {
 
 	q := db.New(conn)
 	dbcerts, err := q.GetCertificates(ctx)
@@ -42,8 +38,8 @@ func NewCertificateProvider(ctx context.Context, conn *pgxpool.Pool) *Certificat
 
 	return &CertificateProvider{
 		certificates: certificates,
-		fallback: &fallback,
-		q: q,
+		fallback:     fallback,
+		q:            q,
 	}
 }
 
@@ -54,7 +50,7 @@ func (c *CertificateProvider) GetCertificate(hello *tls.ClientHelloInfo) (*tls.C
 	log.Printf("Could not find certificate for %q", hello.ServerName)
 
 	return c.fallback, nil
-	
+
 }
 
 func (c *CertificateProvider) SetCertificate(ctx context.Context, name string, cert *tls.Certificate) error {
@@ -64,9 +60,9 @@ func (c *CertificateProvider) SetCertificate(ctx context.Context, name string, c
 	}
 
 	_, err = c.q.InsertCertificate(ctx, db.InsertCertificateParams{
-		Hostname: name,
+		Hostname:    name,
 		Certificate: certPem,
-		PrivateKey: keyPem,
+		PrivateKey:  keyPem,
 	})
 	if err != nil {
 		return err

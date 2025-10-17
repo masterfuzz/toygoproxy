@@ -57,4 +57,3 @@ func (s *SelfSignedIssuer) RequestCertificate(hostname string) (*tls.Certificate
 
 	return cert, nil
 }
-

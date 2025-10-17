@@ -14,7 +14,6 @@ import (
 	"github.com/masterfuzz/toygoproxy/pkg/database/migrations/fs"
 )
 
-
 func Run(pool *pgxpool.Pool) error {
 	msrc, mErr := iofs.New(fs.Migrations, fs.MigrationsPath)
 	if mErr != nil {
@@ -40,4 +39,3 @@ func Run(pool *pgxpool.Pool) error {
 
 	return nil
 }
-

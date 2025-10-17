@@ -16,16 +16,16 @@ import (
 var _ http.Handler = &ProxyServer{}
 
 type ProxyServer struct {
-	conn *pgxpool.Pool
-	q *db.Queries
+	conn  *pgxpool.Pool
+	q     *db.Queries
 	certs *CertificateProvider
 	magic string
 }
 
 func NewProxyServer(conn *pgxpool.Pool, certificateProvider *CertificateProvider) *ProxyServer {
 	return &ProxyServer{
-		conn: conn,
-		q: db.New(conn),
+		conn:  conn,
+		q:     db.New(conn),
 		certs: certificateProvider,
 	}
 }
@@ -58,5 +58,3 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprint(w, resp)
 }
-
-

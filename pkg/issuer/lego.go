@@ -77,4 +77,3 @@ func NewLegoUser(email string, key crypto.PrivateKey) *LegoUser {
 		key:   key,
 	}
 }
-

@@ -15,19 +15,18 @@ import (
 var _ http.Handler = &ManagementServer{}
 
 type ManagementServer struct {
-	q *db.Queries
-	certs *CertificateProvider
+	q      *db.Queries
+	certs  *CertificateProvider
 	issuer issuer.Issuer
 }
 
 func NewManagementServer(conn *pgxpool.Pool, certificateProvider *CertificateProvider, certificateIssuer issuer.Issuer) *ManagementServer {
 	return &ManagementServer{
-		q: db.New(conn),
-		certs: certificateProvider,
+		q:      db.New(conn),
+		certs:  certificateProvider,
 		issuer: certificateIssuer,
 	}
 }
-
 
 func (p *ManagementServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.handleRegister(w, r)

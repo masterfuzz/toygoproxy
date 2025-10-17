@@ -8,4 +8,3 @@ import "embed"
 var Migrations embed.FS
 
 var MigrationsPath = "."
-

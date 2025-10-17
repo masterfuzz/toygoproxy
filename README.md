@@ -31,3 +31,6 @@ curl --resolve customer.com:8443:127.0.0.1 https://customer.com:8443 -k -v
 
 ## Let's Encrypt Integration
 I haven't actually tested this, but the skeleton is in place to use `NewAcmeHttp01Issuer` with a letsencrypt account instead of the `SelfSignedIssuer`
+
+## Metrics
+A handful of (AI generated) [metrics](METRICS.md) are available on the metrics port (9090).
