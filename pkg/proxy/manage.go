@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/masterfuzz/toygoproxy/pkg/database/postgres"
 	"github.com/masterfuzz/toygoproxy/pkg/issuer"
+	"github.com/masterfuzz/toygoproxy/pkg/metrics"
 )
 
 var _ http.Handler = &ManagementServer{}
@@ -29,6 +30,10 @@ func NewManagementServer(conn *pgxpool.Pool, certificateProvider *CertificatePro
 
 
 func (p *ManagementServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	p.handleRegister(w, r)
+}
+
+func (p *ManagementServer) handleRegister(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -71,10 +76,13 @@ func (p *ManagementServer) EnsureCertificate(hostname string) {
 		if err != nil {
 			// TODO: what do we do here if this fails? Unregister?
 			log.Printf("Error registering certificate for %q: %v", hostname, err)
+			metrics.CertificateIssuesTotal.WithLabelValues(hostname, "failed").Inc()
 			return
 		}
 		p.certs.SetCertificate(context.TODO(), hostname, cert)
 		log.Printf("Certificate for %q set", hostname)
+		metrics.CertificateIssuesTotal.WithLabelValues(hostname, "success").Inc()
+		metrics.CertificatesTotal.Inc()
 		return
 	}
 	log.Printf("%q already has a certificate", hostname)

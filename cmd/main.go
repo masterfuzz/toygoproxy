@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/masterfuzz/toygoproxy/pkg/database/migrations"
 	"github.com/masterfuzz/toygoproxy/pkg/issuer"
@@ -20,6 +21,7 @@ var (
 	httpsPort = envOrDefault("HTTPS_PORT", "8443")
 	httpPort = envOrDefault("HTTP_PORT", "8080")
 	managementPort = envOrDefault("MANAGMENT_PORT", "9080")
+	metricsPort = envOrDefault("METRICS_PORT", "9090")
 )
 
 func main() {
@@ -72,6 +74,15 @@ func main() {
 	go func() {
 		if err := http.ListenAndServe(":" + managementPort, manage); err != nil {
 			log.Fatalf("Management server error: %v", err)
+		}
+	}()
+
+	// Start metrics server
+	go func() {
+		log.Printf("Starting metrics server on :%v", metricsPort)
+		http.Handle("/metrics", promhttp.Handler())
+		if err := http.ListenAndServe(":" + metricsPort, nil); err != nil {
+			log.Fatalf("Metrics server error: %v", err)
 		}
 	}()
 
