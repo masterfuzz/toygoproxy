@@ -17,11 +17,9 @@ import (
 )
 
 var (
-	httpsPort = "8443"
-	httpPort = "8080"
-
-	// In the real world the API server would be a different server entirely
-	magicHostname = "localhost"
+	httpsPort = envOrDefault("HTTPS_PORT", "8443")
+	httpPort = envOrDefault("HTTP_PORT", "8080")
+	managementPort = envOrDefault("MANAGMENT_PORT", "9080")
 )
 
 func main() {
@@ -39,12 +37,16 @@ func main() {
 	}
 
 	certs := proxy.NewCertificateProvider(ctx, pool)
-	prox := proxy.NewProxyServer(pool, certs, &issuer.SelfSignedIssuer{}, magicHostname)
+	prox := proxy.NewProxyServer(pool, certs)
+
+	// with lego issuer
+	// lego := issuer.NewAcmeHttp01Issuer(issuer.NewLegoUser("user@example.com", privateKey))
+	// manage := proxy.NewManagementServer(pool, certs, lego)
+
+	manage := proxy.NewManagementServer(pool, certs, &issuer.SelfSignedIssuer{})
 
 	mux := http.NewServeMux()
 	mux.Handle("/", prox)
-
-
 
 	tlsConfig := &tls.Config{
 		GetCertificate: certs.GetCertificate,
@@ -62,7 +64,14 @@ func main() {
 		if err := http.ListenAndServe(":" + httpPort, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, fmt.Sprintf("https://%v:%v/%v", strings.Split(r.Host, ":")[0], httpsPort, r.RequestURI), http.StatusMovedPermanently)
 		})); err != nil {
-			log.Fatalf("ListenAndServe error: %v", err)
+			log.Fatalf("HTTP listen error: %v", err)
+		}
+	}()
+
+	// Start management server
+	go func() {
+		if err := http.ListenAndServe(":" + managementPort, manage); err != nil {
+			log.Fatalf("Management server error: %v", err)
 		}
 	}()
 
@@ -71,4 +80,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error statring https server %v", err)
 	}
+}
+
+func envOrDefault(key string, fallback string) string {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	return v
 }
