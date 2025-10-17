@@ -4,6 +4,12 @@
 
 package postgres
 
+type Certificate struct {
+	Hostname    string
+	Certificate string
+	PrivateKey  string
+}
+
 type StatusPage struct {
 	ID          int32
 	Hostname    string

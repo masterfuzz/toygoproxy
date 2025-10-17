@@ -25,8 +25,9 @@ var (
 )
 
 func main() {
+	ctx := context.Background()
 
-	pool, err := pgxpool.New(context.Background(), "") // uses pg env vars
+	pool, err := pgxpool.New(ctx, "") // uses pg env vars
 	if err != nil {
 		fmt.Printf("Unable to create database connection pool: %v\n", err)
 		os.Exit(1)
@@ -37,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	certs := proxy.NewCertificateProvider()
+	certs := proxy.NewCertificateProvider(ctx, pool)
 	prox := proxy.NewProxyServer(pool, certs, &issuer.SelfSignedIssuer{}, magicHostname)
 
 	mux := http.NewServeMux()

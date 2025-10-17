@@ -1,12 +1,5 @@
-CREATE TABLE IF NOT EXISTS status_pages (
-    id SERIAL PRIMARY KEY,
-    hostname TEXT UNIQUE NOT NULL,
-    page_data_url TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS certificates (
     hostname TEXT UNIQUE PRIMARY KEY,
     certificate TEXT NOT NULL,
     private_key TEXT NOT NULL
 );
-

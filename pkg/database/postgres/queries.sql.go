@@ -9,6 +9,30 @@ import (
 	"context"
 )
 
+const getCertificates = `-- name: GetCertificates :many
+SELECT hostname, certificate, private_key FROM certificates
+`
+
+func (q *Queries) GetCertificates(ctx context.Context) ([]Certificate, error) {
+	rows, err := q.db.Query(ctx, getCertificates)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Certificate
+	for rows.Next() {
+		var i Certificate
+		if err := rows.Scan(&i.Hostname, &i.Certificate, &i.PrivateKey); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getStatusPage = `-- name: GetStatusPage :one
 SELECT page_data_url FROM status_pages WHERE hostname = $1 LIMIT 1
 `
@@ -18,6 +42,27 @@ func (q *Queries) GetStatusPage(ctx context.Context, hostname string) (string, e
 	var page_data_url string
 	err := row.Scan(&page_data_url)
 	return page_data_url, err
+}
+
+const insertCertificate = `-- name: InsertCertificate :one
+INSERT INTO certificates (
+    hostname,
+    certificate,
+    private_key
+) VALUES ($1, $2, $3) RETURNING hostname, certificate, private_key
+`
+
+type InsertCertificateParams struct {
+	Hostname    string
+	Certificate string
+	PrivateKey  string
+}
+
+func (q *Queries) InsertCertificate(ctx context.Context, arg InsertCertificateParams) (Certificate, error) {
+	row := q.db.QueryRow(ctx, insertCertificate, arg.Hostname, arg.Certificate, arg.PrivateKey)
+	var i Certificate
+	err := row.Scan(&i.Hostname, &i.Certificate, &i.PrivateKey)
+	return i, err
 }
 
 const registerStatusPage = `-- name: RegisterStatusPage :one

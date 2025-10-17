@@ -95,7 +95,7 @@ func (p *ProxyServer) EnsureCertificate(hostname string) {
 			log.Printf("Error registering certificate for %q: %v", hostname, err)
 			return
 		}
-		p.certs.SetCertificate(hostname, cert)
+		p.certs.SetCertificate(context.TODO(), hostname, cert)
 		log.Printf("Certificate for %q set", hostname)
 		return
 	}
